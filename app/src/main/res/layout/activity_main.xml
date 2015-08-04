@@ -1,0 +1,126 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/main_container_width"
+    android:layout_height="match_parent"
+    android:padding="@dimen/general_container_padding"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/add_photos_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/two_image_text"
+            android:text="@string/get_images_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"/>
+
+        <Button
+            android:id="@+id/grab_photos"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginBottom="@dimen/general_container_padding"
+            android:text="@string/get_images_btn"
+            android:layout_below="@id/two_image_text"/>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/grab_photos"
+            android:layout_centerHorizontal="true">
+
+            <ImageView
+                android:id="@+id/left_photo"
+                android:layout_width="@dimen/image_container_size"
+                android:layout_height="@dimen/image_container_size"
+                android:background="@android:color/black" />
+
+            <ProgressBar
+                android:id="@+id/left_progress"
+                android:layout_width="@dimen/image_container_size"
+                android:layout_height="@dimen/image_container_size"
+                android:indeterminate="true"
+                android:visibility="gone"
+                android:background="@android:color/transparent" />
+
+            <ImageView
+                android:id="@+id/right_photo"
+                android:layout_width="@dimen/image_container_size"
+                android:layout_height="@dimen/image_container_size"
+                android:layout_marginLeft="@dimen/image_margin"
+                android:layout_marginStart="@dimen/image_margin"
+                android:layout_toRightOf="@id/left_photo"
+                android:layout_toEndOf="@id/left_photo"
+                android:background="@android:color/black"/>
+
+            <ProgressBar
+                android:id="@+id/right_progress"
+                android:layout_width="@dimen/image_container_size"
+                android:layout_height="@dimen/image_container_size"
+                android:indeterminate="true"
+                android:visibility="gone"
+                android:layout_marginLeft="@dimen/image_margin"
+                android:layout_marginStart="@dimen/image_margin"
+                android:layout_toRightOf="@id/left_photo"
+                android:layout_toEndOf="@id/left_photo"
+                android:background="@android:color/transparent" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view_sep_height"
+        android:layout_marginTop="@dimen/view_sep_marginTop"
+        android:layout_marginBottom="@dimen/view_sep_marginTop"
+        android:background="@color/sep_bg_color"/>
+
+    <TextView
+        android:id="@+id/add_images_to_album"
+        android:text="@string/create_album_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/create_album"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/create_album_btn" />
+
+    <TextView
+        android:id="@+id/url_for_album"
+        android:text="@string/empty_default_url_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view_sep_height"
+        android:layout_marginTop="@dimen/view_sep_marginTop"
+        android:layout_marginBottom="@dimen/view_sep_marginTop"
+        android:background="@color/sep_bg_color"/>
+
+    <TextView
+        android:id="@+id/delete_album"
+        android:text="@string/delete_album_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/delete_album_btn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/delete_album_btn" />
+
+    <TextView
+        android:id="@+id/result_of_delete"
+        android:text="@string/delete_album_result_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SampleRetroFitApp</string>
+    <string name="action_settings">Settings</string>
+    <string name="get_images_title">Grab two images from imgur\'s gallery. (GET method)</string>
+    <string name="get_images_btn">Grab photos</string>
+    <string name="create_album_title">Create an album with those two images. (POST method)</string>
+    <string name="create_album_btn">Create Album</string>
+    <string name="empty_default_url_text">Url for album:</string>
+    <string name="delete_album_title">Delete album. Navigate to previous link to see that it worked. (DELETE method)</string>
+    <string name="delete_album_btn">Delete Album</string>
+    <string name="delete_album_result_text">Delete album result:</string>
+</resources>
