@@ -68,17 +68,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 switch (view.getId()) {
                     case R.id.grab_photos:
+                        // Send a message to our handler to display our progress bars.
                         mHandler.sendEmptyMessage(UpdateType.DisplayProgress.ordinal());
 
+                        // Perform our GET request to grab gallery images.
                         final GalleryModelGetResponse imgurGallery = GalleryGetRequest.getGallery();
                         if (imgurGallery == null) {
-                            Toast.makeText(MainActivity.this, "Gallery response is null", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
+                        // We store members for two gallery image objects (MyGallery object type)
                         getLeftGalleryModel(imgurGallery);
                         getRightGalleryModel(imgurGallery);
 
+                        // Send message to handler that we have our images and should load them to our ImageViews.
                         mHandler.sendMessage(MessageCreator.createLeftImageMessage(mLeft.getLink()));
                         mHandler.sendMessage(MessageCreator.createRightImageMessage(mRight.getLink()));
                         break;
@@ -92,23 +95,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         images[0] = mLeft.getId();
                         images[1] = mRight.getId();
 
+                        // Perform our POST request, which creates an Imgur album using our two saved images.
                         final BasicPostResponse response = CreateAlbumPostRequest.createAlbum("Our new album!", images);
                         if (response == null) {
-                            Toast.makeText(MainActivity.this, "Album creation failed.", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
+                        // Since we're not logged in, we need to save the album deletehash so we
+                        // can modify the album in the future.
                         albumDeleteHash = response.getData().getDeletehash();
+
+                        // Send handler message to update our url so that a user can navigate to it.
                         mHandler.sendMessage(MessageCreator.createAlbumMessage(response.getData().getId()));
                         break;
 
                     case R.id.delete_album_btn:
-                        final BasePostResponse deleteResponse = DeleteAlbumDeleteRequest.deleteGallery(albumDeleteHash);
-                        if (deleteResponse == null) {
-                            Toast.makeText(MainActivity.this, "Album deletion failed.", Toast.LENGTH_SHORT).show();
+                        if (albumDeleteHash == null) {
                             return;
                         }
 
+                        // Perform our DELETE request to remove our previously created album from
+                        // imgur.com
+                        final BasePostResponse deleteResponse = DeleteAlbumDeleteRequest.deleteGallery(albumDeleteHash);
+                        if (deleteResponse == null) {
+                            return;
+                        }
+
+                        // Send handler message to update UI with the result status of our delete operation.
                         mHandler.sendMessage(MessageCreator.createDeleteMessage(deleteResponse.isSuccess()));
                         break;
                 }
