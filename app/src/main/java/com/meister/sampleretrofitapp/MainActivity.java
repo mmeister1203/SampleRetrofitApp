@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.meister.sampleretrofitapp.Handlers.ResultsHandler;
 import com.meister.sampleretrofitapp.Retrofit.Models.BasePostResponse;
@@ -19,6 +18,10 @@ import com.meister.sampleretrofitapp.Retrofit.Requests.GalleryGetRequest;
 import com.meister.sampleretrofitapp.Retrofit.ServiceClient;
 import com.meister.sampleretrofitapp.Utils.BitmapDownloadTask;
 import com.meister.sampleretrofitapp.Utils.MessageCreator;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * MainActivity.
@@ -61,40 +64,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.delete_album_btn).setOnClickListener(this);
     }
 
+    // This demonstrates how to make async and synchronous Rest calls.
     @Override
     public void onClick(final View view) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                switch (view.getId()) {
-                    case R.id.grab_photos:
-                        // Send a message to our handler to display our progress bars.
-                        mHandler.sendEmptyMessage(UpdateType.DisplayProgress.ordinal());
 
-                        // Perform our GET request to grab gallery images.
-                        final GalleryModelGetResponse imgurGallery = GalleryGetRequest.getGallery();
-                        if (imgurGallery == null) {
+        switch (view.getId()) {
+            case R.id.grab_photos:
+                showProgressBars();
+
+                GalleryGetRequest.getGalleryAsync(new Callback<GalleryModelGetResponse>() {
+                    @Override
+                    public void success(GalleryModelGetResponse galleryModelGetResponse, Response response) {
+                        if (galleryModelGetResponse == null) {
                             return;
                         }
 
                         // We store members for two gallery image objects (MyGallery object type)
-                        getLeftGalleryModel(imgurGallery);
-                        getRightGalleryModel(imgurGallery);
+                        getLeftGalleryModel(galleryModelGetResponse);
+                        getRightGalleryModel(galleryModelGetResponse);
 
                         // Send message to handler that we have our images and should load them to our ImageViews.
                         mHandler.sendMessage(MessageCreator.createLeftImageMessage(mLeft.getLink()));
                         mHandler.sendMessage(MessageCreator.createRightImageMessage(mRight.getLink()));
-                        break;
+                    }
 
-                    case R.id.create_album:
-                        if (mLeft == null || mRight == null) {
+                    @Override
+                    public void failure(RetrofitError error) {
+                        // Intentionally blank.
+                    }
+                });
+                break;
+
+            case R.id.delete_album_btn:
+                if (albumDeleteHash == null) {
+                    return;
+                }
+
+                DeleteAlbumDeleteRequest.deleteGalleryAsync(albumDeleteHash, new Callback<BasePostResponse>() {
+                    @Override
+                    public void success(BasePostResponse basePostResponse, Response response) {
+                        if (basePostResponse == null) {
                             return;
                         }
 
-                        final String[] images = new String[2];
-                        images[0] = mLeft.getId();
-                        images[1] = mRight.getId();
+                        // Send handler message to update UI with the result status of our delete operation.
+                        mHandler.sendMessage(MessageCreator.createDeleteMessage(basePostResponse.isSuccess()));
+                    }
 
+                    @Override
+                    public void failure(RetrofitError error) {
+                        mHandler.sendMessage(MessageCreator.createDeleteMessage(false));
+                    }
+                });
+                break;
+
+            case R.id.create_album:
+                if (mLeft == null || mRight == null) {
+                    return;
+                }
+
+                final String[] images = new String[2];
+                images[0] = mLeft.getId();
+                images[1] = mRight.getId();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
                         // Perform our POST request, which creates an Imgur album using our two saved images.
                         final BasicPostResponse response = CreateAlbumPostRequest.createAlbum("Our new album!", images);
                         if (response == null) {
@@ -107,26 +142,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // Send handler message to update our url so that a user can navigate to it.
                         mHandler.sendMessage(MessageCreator.createAlbumMessage(response.getData().getId()));
-                        break;
-
-                    case R.id.delete_album_btn:
-                        if (albumDeleteHash == null) {
-                            return;
-                        }
-
-                        // Perform our DELETE request to remove our previously created album from
-                        // imgur.com
-                        final BasePostResponse deleteResponse = DeleteAlbumDeleteRequest.deleteGallery(albumDeleteHash);
-                        if (deleteResponse == null) {
-                            return;
-                        }
-
-                        // Send handler message to update UI with the result status of our delete operation.
-                        mHandler.sendMessage(MessageCreator.createDeleteMessage(deleteResponse.isSuccess()));
-                        break;
-                }
-            }
-        }).start();
+                    }
+                }).start();
+                break;
+        }
     }
 
     public void updateLeftImage(String url) {
