@@ -1,7 +1,5 @@
 package com.meister.sampleretrofitapp.Retrofit;
 
-import com.meister.sampleretrofitapp.BuildConfig;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,18 +29,10 @@ public class ServiceClient {
 
     // Configure our Retrofit object.
     public void configureRestAdapter() {
-
-        if (BuildConfig.DEBUG) {
-            mRestAdapter = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        } else {
-            mRestAdapter = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
+        mRestAdapter = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
     }
 
     @SuppressWarnings("unchecked")
