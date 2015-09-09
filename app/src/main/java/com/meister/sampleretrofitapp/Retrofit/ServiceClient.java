@@ -1,16 +1,12 @@
 package com.meister.sampleretrofitapp.Retrofit;
 
-import android.util.Log;
-
 import com.meister.sampleretrofitapp.BuildConfig;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
+import retrofit.GsonConverterFactory;
+import retrofit.Retrofit;
 
 /**
  * ServiceClient. We create a singleton for our service client because creating it each time we
@@ -20,10 +16,10 @@ import retrofit.RestAdapter;
 public class ServiceClient {
     private static ServiceClient instance;
 
-    private static final String BASE_URL = "https://api.imgur.com/3/";
-    private static final String IMGUR_CLIENT_ID = "e3284cee56b7b4b";
+    public static final String BASE_URL = "https://api.imgur.com/3/";
+    public static final String IMGUR_CLIENT_ID = "e3284cee56b7b4b";
 
-    private RestAdapter mRestAdapter;
+    private Retrofit mRestAdapter;
     private Map<String, Object> mClients = new HashMap<>();
 
     public static ServiceClient getInstance() {
@@ -33,19 +29,18 @@ public class ServiceClient {
         return instance;
     }
 
-    // Configure our RestAdapter. Basically the same except for logging.
+    // Configure our Retrofit object.
     public void configureRestAdapter() {
+
         if (BuildConfig.DEBUG) {
-            mRestAdapter = new RestAdapter.Builder()
-                    .setLogLevel(RestAdapter.LogLevel.FULL)
-                    .setEndpoint(BASE_URL)
-                    .setRequestInterceptor(new NewApiInterceptor())
-                    .setLog(LOGGER)
+            mRestAdapter = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
                     .build();
         } else {
-            mRestAdapter = new RestAdapter.Builder()
-                    .setEndpoint(BASE_URL)
-                    .setRequestInterceptor(new NewApiInterceptor())
+            mRestAdapter = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
     }
@@ -60,37 +55,8 @@ public class ServiceClient {
             return client;
         }
         client = mRestAdapter.create(clazz);
+
         mClients.put(clazz.getCanonicalName(), client);
         return client;
     }
-
-    // Interceptor allows us to add headers to our request.
-    private static final class NewApiInterceptor implements RequestInterceptor {
-        private NewApiInterceptor() {}
-
-        @Override
-        public void intercept(RequestFacade request) {
-            request.addHeader("Authorization", "Client-ID " + IMGUR_CLIENT_ID);
-        }
-    }
-
-    private static final RestAdapter.Log LOGGER = new RestAdapter.Log() {
-        @Override
-        public void log(String message) {
-            final List<String> messages = splitEqually(message, 256);
-
-            for (String s : messages) {
-                Log.i("RETROFIT", s);
-            }
-        }
-
-        private List<String> splitEqually(String text, int size) {
-            final List<String> ret = new ArrayList<>((text.length() + size - 1) / size);
-
-            for (int start = 0; start < text.length(); start += size) {
-                ret.add(text.substring(start, Math.min(text.length(), start + size)));
-            }
-            return ret;
-        }
-    };
 }

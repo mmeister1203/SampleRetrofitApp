@@ -3,36 +3,24 @@ package com.meister.sampleretrofitapp.Retrofit.Requests;
 import com.meister.sampleretrofitapp.Retrofit.Models.BasePostResponse;
 import com.meister.sampleretrofitapp.Retrofit.ServiceClient;
 
-import retrofit.Callback;
+import retrofit.Call;
 import retrofit.http.DELETE;
+import retrofit.http.Headers;
 import retrofit.http.Path;
 
 /**
  * Request used to delete an album from imgur.
  * Created by mark.meister on 8/3/15.
  */
-@SuppressWarnings("unused")
 public class DeleteAlbumDeleteRequest {
 
-    public interface GalleryClient {
-        @DELETE("/album/{album}")
-        BasePostResponse create(@Path("album") String album);
-
-        @DELETE("/album/{album}")
-        void createAsync(@Path("album") String album, Callback<BasePostResponse> callback);
+    public interface GalleryService {
+        @Headers("Authorization: Client-ID " + ServiceClient.IMGUR_CLIENT_ID)
+        @DELETE("album/{album}")
+        Call<BasePostResponse> create(@Path("album") String album);
     }
 
-    public static BasePostResponse deleteGallery(String albumId) {
-        final GalleryClient client = ServiceClient.getInstance().getClient(GalleryClient.class);
-
-        try {
-            return client.create(albumId);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static void deleteGalleryAsync(String albumId, Callback<BasePostResponse> callback) {
-        ServiceClient.getInstance().getClient(GalleryClient.class).createAsync(albumId, callback);
+    public static Call<BasePostResponse> deleteGallery(String albumId) {
+        return ServiceClient.getInstance().getClient(GalleryService.class).create(albumId);
     }
 }

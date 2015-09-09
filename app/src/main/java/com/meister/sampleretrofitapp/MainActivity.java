@@ -3,6 +3,7 @@ package com.meister.sampleretrofitapp;
 import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -18,10 +19,14 @@ import com.meister.sampleretrofitapp.Retrofit.Requests.GalleryGetRequest;
 import com.meister.sampleretrofitapp.Retrofit.ServiceClient;
 import com.meister.sampleretrofitapp.Utils.BitmapDownloadTask;
 import com.meister.sampleretrofitapp.Utils.MessageCreator;
+import com.squareup.okhttp.RequestBody;
 
+import java.io.IOException;
+
+import retrofit.Call;
 import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * MainActivity.
@@ -72,16 +77,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.grab_photos:
                 showProgressBars();
 
-                GalleryGetRequest.getGalleryAsync(new Callback<GalleryModelGetResponse>() {
+                GalleryGetRequest.getGalleryService().enqueue(new Callback<GalleryModelGetResponse>() {
                     @Override
-                    public void success(GalleryModelGetResponse galleryModelGetResponse, Response response) {
-                        if (galleryModelGetResponse == null) {
+                    public void onResponse(Response<GalleryModelGetResponse> response) {
+                        if (response == null || response.body() == null) {
                             return;
                         }
 
                         // We store members for two gallery image objects (MyGallery object type)
-                        getLeftGalleryModel(galleryModelGetResponse);
-                        getRightGalleryModel(galleryModelGetResponse);
+                        getLeftGalleryModel(response.body());
+                        getRightGalleryModel(response.body());
 
                         // Send message to handler that we have our images and should load them to our ImageViews.
                         mHandler.sendMessage(MessageCreator.createLeftImageMessage(mLeft.getLink()));
@@ -89,10 +94,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     @Override
-                    public void failure(RetrofitError error) {
-                        // Intentionally blank.
+                    public void onFailure(Throwable t) {
+                        t.printStackTrace();
                     }
                 });
+
                 break;
 
             case R.id.delete_album_btn:
@@ -100,22 +106,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
 
-                DeleteAlbumDeleteRequest.deleteGalleryAsync(albumDeleteHash, new Callback<BasePostResponse>() {
+                DeleteAlbumDeleteRequest.deleteGallery(albumDeleteHash).enqueue(new Callback<BasePostResponse>() {
                     @Override
-                    public void success(BasePostResponse basePostResponse, Response response) {
-                        if (basePostResponse == null) {
+                    public void onResponse(Response<BasePostResponse> response) {
+                        if (response == null || response.body() == null) {
                             return;
                         }
 
                         // Send handler message to update UI with the result status of our delete operation.
-                        mHandler.sendMessage(MessageCreator.createDeleteMessage(basePostResponse.isSuccess()));
+                        mHandler.sendMessage(MessageCreator.createDeleteMessage(response.isSuccess()));
                     }
 
                     @Override
-                    public void failure(RetrofitError error) {
+                    public void onFailure(Throwable t) {
+                        t.printStackTrace();
                         mHandler.sendMessage(MessageCreator.createDeleteMessage(false));
                     }
                 });
+
                 break;
 
             case R.id.create_album:
@@ -131,7 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         // Perform our POST request, which creates an Imgur album using our two saved images.
-                        final BasicPostResponse response = CreateAlbumPostRequest.createAlbum("Our new album!", images);
+                        BasicPostResponse response = null;
+
+                        try {
+                            response = CreateAlbumPostRequest.createAlbum("Our new album!", images).execute().body();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                         if (response == null) {
                             return;
                         }

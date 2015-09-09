@@ -1,7 +1,5 @@
 package com.meister.sampleretrofitapp.Retrofit.Models;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
  * BaseResponse class. Contains the status of our request in the form of a boolean and status code.
  * Created by mark.meister on 8/3/15.
@@ -9,9 +7,7 @@ import com.google.gson.annotations.SerializedName;
 @SuppressWarnings("unused")
 public class BaseGetResponse {
 
-    // If we'd like to name our member something else, we can specify the serialized name here.
-    @SerializedName("success")
-    private boolean requestSuccess;
+    private boolean success;
 
     private String status;
 
@@ -24,10 +20,10 @@ public class BaseGetResponse {
     }
 
     public boolean isSuccess() {
-        return requestSuccess;
+        return success;
     }
 
     public void setSuccess(boolean success) {
-        this.requestSuccess = success;
+        this.success = success;
     }
 }

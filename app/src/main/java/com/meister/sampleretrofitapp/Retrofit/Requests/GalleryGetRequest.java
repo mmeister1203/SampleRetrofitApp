@@ -1,10 +1,13 @@
 package com.meister.sampleretrofitapp.Retrofit.Requests;
 
+import android.support.annotation.NonNull;
+
 import com.meister.sampleretrofitapp.Retrofit.Models.GalleryModelGetResponse;
 import com.meister.sampleretrofitapp.Retrofit.ServiceClient;
 
-import retrofit.Callback;
+import retrofit.Call;
 import retrofit.http.GET;
+import retrofit.http.Headers;
 
 /**
  * Retrieves the current imgur gallery image data.
@@ -13,25 +16,14 @@ import retrofit.http.GET;
 @SuppressWarnings("unused")
 public class GalleryGetRequest {
 
-    public interface GalleryClient {
-        @GET("/gallery")
-        GalleryModelGetResponse create();
-
-        @GET("/gallery")
-        void createAsync(Callback<GalleryModelGetResponse> callback);
+    public interface GalleryService {
+        @Headers("Authorization: Client-ID " + ServiceClient.IMGUR_CLIENT_ID)
+        @GET("gallery")
+        Call<GalleryModelGetResponse> getImgurGallery();
     }
 
-    public static GalleryModelGetResponse getGallery() {
-        final GalleryClient client = ServiceClient.getInstance().getClient(GalleryClient.class);
-
-        try {
-            return client.create();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static void getGalleryAsync(Callback<GalleryModelGetResponse> callback) {
-        ServiceClient.getInstance().getClient(GalleryClient.class).createAsync(callback);
+    @NonNull
+    public static Call<GalleryModelGetResponse> getGalleryService() {
+        return ServiceClient.getInstance().getClient(GalleryService.class).getImgurGallery();
     }
 }
