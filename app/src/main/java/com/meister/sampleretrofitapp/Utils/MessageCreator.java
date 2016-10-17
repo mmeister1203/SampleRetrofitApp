@@ -3,6 +3,12 @@ package com.meister.sampleretrofitapp.Utils;
 import android.os.Bundle;
 import android.os.Message;
 
+import com.meister.sampleretrofitapp.MainActivity;
+
+import static com.meister.sampleretrofitapp.MainActivity.CreateAlbum;
+import static com.meister.sampleretrofitapp.MainActivity.DeleteAlbum;
+import static com.meister.sampleretrofitapp.MainActivity.LeftImage;
+import static com.meister.sampleretrofitapp.MainActivity.RightImage;
 import static com.meister.sampleretrofitapp.MainActivity.UpdateType;
 
 /**
@@ -15,26 +21,26 @@ public class MessageCreator {
     public static final String DELETE_RESULT_KEY = "delete_result";
 
     public static Message createLeftImageMessage(String url) {
-        return createMessage(UpdateType.LeftImage, url, false);
+        return createMessage(MainActivity.LeftImage, url, false);
     }
 
     public static Message createRightImageMessage(String url) {
-        return createMessage(UpdateType.RightImage, url, false);
+        return createMessage(MainActivity.RightImage, url, false);
     }
 
     public static Message createAlbumMessage(String id) {
-        return createMessage(UpdateType.CreateAlbum, id, false);
+        return createMessage(MainActivity.CreateAlbum, id, false);
     }
 
     public static Message createDeleteMessage(boolean result) {
-        return createMessage(UpdateType.DeleteAlbum, "", result);
+        return createMessage(MainActivity.DeleteAlbum, "", result);
     }
 
-    public static Message createMessage(UpdateType type, String idOrUrl, boolean success) {
+    public static Message createMessage(@UpdateType int type, String idOrUrl, boolean success) {
         final Bundle args = new Bundle();
 
         final Message msg = new Message();
-        msg.what = type.ordinal();
+        msg.what = type;
 
         switch (type) {
             case LeftImage:
