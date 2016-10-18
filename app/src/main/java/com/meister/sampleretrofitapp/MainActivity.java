@@ -1,6 +1,5 @@
 package com.meister.sampleretrofitapp;
 
-import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,21 +8,25 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.meister.sampleretrofitapp.Handlers.ResultsHandler;
+import com.meister.sampleretrofitapp.Retrofit.ImgurApi;
 import com.meister.sampleretrofitapp.Retrofit.Models.BasePostResponse;
 import com.meister.sampleretrofitapp.Retrofit.Models.BasicPostResponse;
+import com.meister.sampleretrofitapp.Retrofit.Models.CreateAlbumBody;
 import com.meister.sampleretrofitapp.Retrofit.Models.GalleryModelGetResponse;
-import com.meister.sampleretrofitapp.Retrofit.Requests.CreateAlbumPostRequest;
-import com.meister.sampleretrofitapp.Retrofit.Requests.DeleteAlbumDeleteRequest;
-import com.meister.sampleretrofitapp.Retrofit.Requests.GalleryGetRequest;
-import com.meister.sampleretrofitapp.Retrofit.ServiceClient;
-import com.meister.sampleretrofitapp.Utils.BitmapDownloadTask;
 import com.meister.sampleretrofitapp.Utils.MessageCreator;
 
 import java.io.IOException;
 
-import retrofit.Callback;
-import retrofit.Response;
+import javax.inject.Inject;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * MainActivity.
@@ -54,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView mUrlTextView;
     private TextView mDeleteTextView;
 
+    @Inject
+    public ImgurApi mImgurApi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mHandler = new ResultsHandler(this);
 
-        // Sets up our RestAdapter.
-        ServiceClient.getInstance().configureRestAdapter();
+        ((MyApplication) getApplication()).getApplicationComponent().inject(this);
 
         mLeftView = (ImageView) findViewById(R.id.left_photo);
         mRightView = (ImageView) findViewById(R.id.right_photo);
@@ -128,16 +133,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // ******************* Private Methods
 
     private void updateImage(final ImageView imageView, final ProgressBar progressBar, String url) {
-        new BitmapDownloadTask(new BitmapDownloadTask.RetrieveBitmap() {
-            @Override
-            public void onBitmapRetrieved(Bitmap bitmap) {
-                if (bitmap != null) {
+        Glide
+            .with(imageView
+            .getContext())
+            .load(url)
+            .fitCenter()
+            .into(new SimpleTarget<GlideDrawable>() {
+                @Override
+                public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
                     progressBar.setVisibility(View.GONE);
-                    imageView.setImageBitmap(bitmap);
+                    imageView.setImageDrawable(resource);
                 }
-            }
-        }, url).execute();
+            });
     }
+
+
 
     private void showProgressBars() {
         mLeftProgress.setVisibility(View.VISIBLE);
@@ -171,29 +181,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         images[0] = mLeft.getId();
         images[1] = mRight.getId();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Perform our POST request, which creates an Imgur album using our two saved images.
-                BasicPostResponse response = null;
+        new Thread(() -> {
+            // Perform our POST request, which creates an Imgur album using our two saved images.
+            BasicPostResponse response = null;
 
-                try {
-                    response = CreateAlbumPostRequest.createAlbum("Our new album!", images).execute().body();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                final CreateAlbumBody body = CreateAlbumBody.newInstance();
+                body.setTitle("Our new album!");
+                body.setIds(images);
 
-                if (response == null) {
-                    return;
-                }
-
-                // Since we're not logged in, we need to save the album deletehash so we
-                // can modify the album in the future.
-                albumDeleteHash = response.getData().getDeletehash();
-
-                // Send handler message to update our url so that a user can navigate to it.
-                mHandler.sendMessage(MessageCreator.createAlbumMessage(response.getData().getId()));
+                response = mImgurApi.create(body).execute().body();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
+            if (response == null) {
+                return;
+            }
+
+            // Since we're not logged in, we need to save the album deletehash so we
+            // can modify the album in the future.
+            albumDeleteHash = response.getData().getDeletehash();
+
+            // Send handler message to update our url so that a user can navigate to it.
+            mHandler.sendMessage(MessageCreator.createAlbumMessage(response.getData().getId()));
         }).start();
     }
 
@@ -202,19 +213,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        DeleteAlbumDeleteRequest.deleteGallery(albumDeleteHash).enqueue(new Callback<BasePostResponse>() {
+        mImgurApi.deleteGallery(albumDeleteHash).enqueue(new Callback<BasePostResponse>() {
             @Override
-            public void onResponse(Response<BasePostResponse> response) {
+            public void onResponse(Call<BasePostResponse> call, Response<BasePostResponse> response) {
                 if (response == null || response.body() == null) {
                     return;
                 }
 
                 // Send handler message to update UI with the result status of our delete operation.
-                mHandler.sendMessage(MessageCreator.createDeleteMessage(response.isSuccess()));
+                mHandler.sendMessage(MessageCreator.createDeleteMessage(response.isSuccessful()));
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<BasePostResponse> call, Throwable t) {
                 t.printStackTrace();
                 mHandler.sendMessage(MessageCreator.createDeleteMessage(false));
             }
@@ -224,9 +235,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void GrabPhotos() {
         showProgressBars();
 
-        GalleryGetRequest.getGalleryService().enqueue(new Callback<GalleryModelGetResponse>() {
+        mImgurApi.getImgurGallery().enqueue(new Callback<GalleryModelGetResponse>() {
             @Override
-            public void onResponse(Response<GalleryModelGetResponse> response) {
+            public void onResponse(Call<GalleryModelGetResponse> call, Response<GalleryModelGetResponse> response) {
                 if (response == null || response.body() == null) {
                     return;
                 }
@@ -241,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<GalleryModelGetResponse> call, Throwable t) {
                 t.printStackTrace();
             }
         });
