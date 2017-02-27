@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:padding="@dimen/general_container_padding"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".presentation.MainActivity">
 
     <RelativeLayout
         android:id="@+id/add_photos_container"

@@ -1,6 +1,6 @@
-package com.meister.sampleretrofitapp.dagger;
+package com.meister.sampleretrofitapp.data.dagger;
 
-import com.meister.sampleretrofitapp.MainActivity;
+import com.meister.sampleretrofitapp.presentation.MainActivity;
 
 import javax.inject.Singleton;
 

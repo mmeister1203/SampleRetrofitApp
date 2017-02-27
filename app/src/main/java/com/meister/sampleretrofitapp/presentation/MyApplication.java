@@ -1,11 +1,11 @@
-package com.meister.sampleretrofitapp;
+package com.meister.sampleretrofitapp.presentation;
 
 import android.app.Application;
 
-import com.meister.sampleretrofitapp.dagger.ApplicationComponent;
-import com.meister.sampleretrofitapp.dagger.ApplicationModule;
-import com.meister.sampleretrofitapp.dagger.DaggerApplicationComponent;
-import com.meister.sampleretrofitapp.dagger.DataModule;
+import com.meister.sampleretrofitapp.data.dagger.ApplicationComponent;
+import com.meister.sampleretrofitapp.data.dagger.ApplicationModule;
+import com.meister.sampleretrofitapp.data.dagger.DaggerApplicationComponent;
+import com.meister.sampleretrofitapp.data.dagger.DataModule;
 
 /**
  * MyApplication

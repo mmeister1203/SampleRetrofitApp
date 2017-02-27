@@ -1,4 +1,4 @@
-package com.meister.sampleretrofitapp.Retrofit.Models;
+package com.meister.sampleretrofitapp.data.retrofit.Models;
 
 import java.util.List;
 
@@ -18,6 +18,10 @@ public class GalleryModelGetResponse extends BaseGetResponse {
 
     public void setData(List<MyGallery> data) {
         this.data = data;
+    }
+
+    public MyGallery newInstance() {
+        return new MyGallery();
     }
 
     // Data model for our gallery images. Defined in https://api.imgur.com/models/gallery_image

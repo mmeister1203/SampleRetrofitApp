@@ -9,4 +9,9 @@
     <string name="delete_album_title">Delete album. Navigate to previous link to see that it worked. (DELETE method)</string>
     <string name="delete_album_btn">Delete Album</string>
     <string name="delete_album_result_text">Delete album result:</string>
+
+    <string name="gallery_error_msg">Error getting photos</string>
+    <string name="album_error_msg">Error creating album</string>
+    <string name="delete_album_error_msg">Error deleting album</string>
+    <string name="error_msg_retry">Retry</string>
 </resources>

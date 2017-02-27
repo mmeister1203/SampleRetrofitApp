@@ -1,4 +1,4 @@
-package com.meister.sampleretrofitapp.Retrofit.Models;
+package com.meister.sampleretrofitapp.data.retrofit.Models;
 
 /**
  * BaseResponse class. Contains the status of our request in the form of a boolean and status code.

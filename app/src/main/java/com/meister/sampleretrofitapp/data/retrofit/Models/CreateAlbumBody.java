@@ -1,4 +1,4 @@
-package com.meister.sampleretrofitapp.Retrofit.Models;
+package com.meister.sampleretrofitapp.data.retrofit.Models;
 
 /**
  * CreateAlbumPostRequest body.

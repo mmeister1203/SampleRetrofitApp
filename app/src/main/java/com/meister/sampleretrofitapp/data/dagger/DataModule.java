@@ -1,7 +1,7 @@
-package com.meister.sampleretrofitapp.dagger;
+package com.meister.sampleretrofitapp.data.dagger;
 
 import com.meister.sampleretrofitapp.BuildConfig;
-import com.meister.sampleretrofitapp.Retrofit.ImgurApi;
+import com.meister.sampleretrofitapp.data.retrofit.ImgurApi;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,6 +12,7 @@ import dagger.Provides;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -42,6 +43,7 @@ public class DataModule {
         return new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .client(okClient.build())
                 .build().create(ImgurApi.class);
     }
